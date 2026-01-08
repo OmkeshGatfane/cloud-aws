@@ -20,8 +20,12 @@ phases:
       - echo "Logging in to Amazon ECR"
       - aws --version
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-      - REPOSITORY_URI=$ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
+      - REPO_HOST="$ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+      - PASSWORD=$(aws ecr get-login-password --region $AWS_DEFAULT_REGION) || (echo "ECR password fetch failed" && exit 1)
+      - if [ -z "$PASSWORD" ]; then echo "Empty ECR password" && exit 1; fi
+      - printf '%s' "$PASSWORD" | docker login --username AWS --password-stdin $REPO_HOST
+      - REPOSITORY_URI=$REPO_HOST/$IMAGE_REPO_NAME
+
 
   build:
     commands:
