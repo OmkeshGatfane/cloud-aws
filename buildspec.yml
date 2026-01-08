@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    IMAGE_REPO_NAME: spring-jpa-java21
+    IMAGE_REPO_NAME: cloud/spring
     IMAGE_TAG: latest
     AWS_DEFAULT_REGION: us-east-1
 
