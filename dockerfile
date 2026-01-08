@@ -17,10 +17,10 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Copy jar from build stage
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/target/*.jar spring.jar
 
 # Expose Spring Boot port
 EXPOSE 8080
 
 # Run application
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java","-jar","spring.jar"]
