@@ -1,26 +1,25 @@
-# ---------- Build Stage ----------
-FROM maven:3.9.9-eclipse-temurin-21-jdk AS build
-WORKDIR /app
+# Dockerfile
+FROM maven:3.9.9 AS build
+WORKDIR /workspace
 
-# Copy pom.xml first (dependency caching)
-COPY pom.xml .
+# copy pom first to cache dependencies
+COPY `pom.xml` .
 RUN mvn -B dependency:go-offline
 
-# Copy source code
-COPY src ./src
+# copy sources and build
+COPY `src` ./src
+RUN mvn -B -DskipTests clean package
 
-# Build JAR
-RUN mvn -B clean package -DskipTests
-
-# ---------- Runtime Stage ----------
-FROM eclipse-temurin:21-jdk
+FROM eclipse-temurin:21-jdk AS runtime
 WORKDIR /app
 
-# Copy jar from build stage
-COPY --from=build /app/target/*.jar spring.jar
+# optional: create non-root user (may fail on some images, harmless)
+RUN groupadd -r app && useradd -r -g app app || true
 
-# Expose Spring Boot port
+# copy the built jar
+COPY --from=build /workspace/target/*.jar app.jar
+RUN chown app:app app.jar || true
+USER app
+
 EXPOSE 8080
-
-# Run application
-ENTRYPOINT ["java","-jar","spring.jar"]
+ENTRYPOINT ["java","-jar","/app/app.jar"]
