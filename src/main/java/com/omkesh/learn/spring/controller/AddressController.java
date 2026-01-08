@@ -100,5 +100,9 @@ public class AddressController {
         List<AddressDao> results = addressService.getAddressByVariable(id, city, country);
         return CollectionUtils.isEmpty(results) ? ResponseEntity.noContent().build() : ResponseEntity.ok(results);
     }
-
+    @GetMapping
+    public ResponseEntity<String> health()
+    {
+        return ResponseEntity.ok("Address Service is up and running");
+    }
 }
