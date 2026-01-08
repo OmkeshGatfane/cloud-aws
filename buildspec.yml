@@ -1,0 +1,42 @@
+version: 0.2
+
+env:
+  variables:
+    IMAGE_REPO_NAME: spring-jpa-java21
+    IMAGE_TAG: latest
+    AWS_DEFAULT_REGION: ap-south-1
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto21
+    commands:
+      - echo "Installing Maven & Docker"
+      - mvn -version
+      - docker --version
+
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR"
+      - aws --version
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - REPOSITORY_URI=$ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
+
+  build:
+    commands:
+      - echo "Building Spring Boot JAR"
+      - mvn clean package -DskipTests
+      - echo "Building Docker image"
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
+
+  post_build:
+    commands:
+      - echo "Pushing Docker image to ECR"
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo "Build completed on $(date)"
+
+artifacts:
+  files:
+    - '**/*'
