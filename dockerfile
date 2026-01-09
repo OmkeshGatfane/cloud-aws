@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk
+FROM amazoncorretto:17
 WORKDIR /app
 COPY target/*.jar /app/spring.jar
 EXPOSE 8080
