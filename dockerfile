@@ -1,4 +1,4 @@
-FROM openjdk:26-ea-29-jdk-slim-bookworm
+FROM openjdk:21
 WORKDIR /app
 COPY target/*.jar /app/spring.jar
 EXPOSE 8080
